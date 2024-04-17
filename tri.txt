@@ -1,0 +1,47 @@
+CREATE DATABASE loja ;
+USE loja;
+
+CREATE TABLE IF NOT EXISTS produtos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100),
+    preço DECIMAL(10,2)
+);
+
+-- Tabela de transações
+CREATE TABLE IF NOT EXISTS transações (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    produto_id INT,
+    quantidade INT,
+    total DECIMAL(10,2),
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (produto_id) REFERENCES produtos(id)
+);
+
+INSERT INTO produto (nome, preço) VALUES
+('Camiseta', 20.00),
+('Calça', 30.00),
+('Sapato', 50.00);
+
+INSERT INTO transações (produto_id, quantidade, total) VALUES
+(1, 2, 40.00),
+(2, 1, 30.00),  
+(3, 1, 50.00);
+
+
+SELECT * FROM transaçôes
+
+DELIMITER //
+
+CREATE TRIGGER registrar_venda BEFORE INSERT ON transações
+FOR EACH ROW
+BEGIN
+    DECLARE produto_preco DECIMAL(10,2);
+    
+    -- Obter o preço do produto vendido
+    SELECT preço INTO produto_preco FROM produto WHERE id = NEW.produto_id;
+    
+    -- Calcular o total da venda
+    SET NEW.total = produto_preco * NEW.quantidade;
+END //
+
+DELIMITER ;
